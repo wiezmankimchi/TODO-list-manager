@@ -2,6 +2,60 @@
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
+## Implementation Plan
+
+I have successfully implemented the full application with the following:
+
+- **Authentication Flow**: Complete email/password sign-in, sign-up, and sign-out flows using Supabase Auth with email confirmation.
+- **Dashboard**: Central hub with user greeting, navigation links, stats cards, and recent activity feed.
+- **Task Lists Management**: CRUD operations for lists and tasks, including filtering (Active, Completed, All) and sorting.
+- **Settings**: Profile management, email updates, password change, theme toggle, and logout.
+- **Data Persistence**: All data (tasks, lists, user info) is stored in Supabase Database.
+- **UI/UX**: Grayscale aesthetic with glassmorphism effects, smooth transitions, and responsive layout.
+- **Notifications**: Local push notifications for new tasks (using Expo Notifications API).
+- **Security**: Row Level Security (RLS) policies in Supabase to ensure data privacy.
+
+
+## Walkthrough
+
+### 1. Authentication Flow
+- **Login**: Users can sign in with email and password.
+- **Sign Up**: New users can register with their email and password.
+- **Sign Out**: Users can sign out of their account.
+- **Email Confirmation**: Users will receive an email to confirm their email address.
+
+### 2. Dashboard
+- **Greeting**: Displays a welcome message with the user's name.
+- **Navigation Links**: Links to the lists and profile sections.
+- **Stats Cards**: Shows active lists, tasks done, and growth.
+- **Recent Activity**: A feed of recent activities.
+
+### 3. Task Lists Management
+- **Create List**: Users can create new task lists.
+- **Create Task**: Users can add tasks to a list.
+- **Edit Task**: Users can edit the title of a task.
+- **Toggle Task**: Users can mark tasks as completed or incomplete.
+- **Delete Task**: Users can delete tasks.
+- **Filter**: Users can filter tasks by Active, Completed, or All.
+- **Sort**: Users can sort tasks by date created.
+
+### 4. Settings
+- **Profile**: Users can update their name.
+- **Email**: Users can update their email address.
+- **Password**: Users can change their password.
+- **Theme**: Users can toggle between dark and light mode.
+- **Logout**: Users can sign out of their account.
+
+### 5. Data Persistence
+- **Supabase Database**: All data is stored in Supabase Database.
+- **Supabase Auth**: All authentication is handled by Supabase Auth.
+
+### 6. Notifications
+- **Local Push Notifications**: Users will receive notifications for new tasks.
+
+### 7. Security
+- **Row Level Security (RLS)**: All data is protected by RLS policies.
+
 ## Get started
 
 1. Install dependencies
