@@ -22,6 +22,7 @@ import {
   ScrollView,
   StyleSheet,
   useColorScheme,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -31,12 +32,17 @@ export default function DashboardScreen() {
   const theme = useTheme();
   const router = useRouter();
   const colorScheme = useColorScheme();
+  const { width: screenWidth } = useWindowDimensions();
   const { tasks } = useTasks();
   const { profile } = useProfileStorage(session);
 
+  const padding = 20;
+  const gap = 12;
+  const cardWidth = (screenWidth - padding * 2 - gap * 2) / 3;
+
   const stats = [
-    { label: 'Active Tasks', value: String(getActiveTasks(tasks)), icon: FolderKanban },
-    { label: 'Tasks Done', value: String(getCompletedTasks(tasks)), icon: CheckCircle },
+    { label: 'Active Tasks', value: String(getActiveTasks(tasks)), icon: FolderKanban, onPress: () => router.push('/lists?filter=todo') },
+    { label: 'Tasks Done', value: String(getCompletedTasks(tasks)), icon: CheckCircle, onPress: () => router.push('/lists?filter=completed') },
     { label: 'Growth', value: getWeekOverWeekGrowth(tasks), icon: TrendingUp },
   ];
 
@@ -95,19 +101,26 @@ export default function DashboardScreen() {
           {stats.map((stat, i) => {
             const Icon = stat.icon;
             return (
-              <Card key={i} style={styles.statCard}>
-                <CardContent style={styles.statContent}>
-                  <View style={[styles.statIconContainer, { backgroundColor: theme.secondary }]}>
-                    <Icon size={16} color={theme.text} />
-                  </View>
-                  <ThemedText style={[styles.statValue, { color: theme.text }]}>
-                    {stat.value}
-                  </ThemedText>
-                  <ThemedText type="small" style={{ color: theme.textSecondary }}>
-                    {stat.label}
-                  </ThemedText>
-                </CardContent>
-              </Card>
+              <Pressable
+                key={i}
+                onPress={stat.onPress}
+                disabled={!stat.onPress}
+                style={{ width: cardWidth }}
+              >
+                <Card style={styles.statCard}>
+                  <CardContent style={styles.statContent}>
+                    <View style={[styles.statIconContainer, { backgroundColor: theme.secondary }]}>
+                      <Icon size={16} color={theme.text} />
+                    </View>
+                    <ThemedText style={[styles.statValue, { color: theme.text }]} numberOfLines={1} adjustsFontSizeToFit>
+                      {stat.value}
+                    </ThemedText>
+                    <ThemedText type="small" style={[styles.statLabel, { color: theme.textSecondary }]} numberOfLines={1} adjustsFontSizeToFit>
+                      {stat.label}
+                    </ThemedText>
+                  </CardContent>
+                </Card>
+              </Pressable>
             );
           })}
         </View>
@@ -265,7 +278,6 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   statCard: {
-    flex: 1,
     padding: 12,
     marginVertical: 0,
   },
@@ -284,6 +296,9 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 20,
     fontWeight: '700',
+  },
+  statLabel: {
+    fontSize: 12,
   },
   linksContainer: {
     gap: 12,

@@ -8,6 +8,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import { useLocalSearchParams } from 'expo-router';
 import { useTheme } from '@/hooks/use-theme';
 import { useTasks } from '@/context/tasks';
 import { Input } from '@/components/ui/Input';
@@ -16,12 +17,21 @@ import { Card, CardContent } from '@/components/ui/Card';
 import { ThemedText } from '@/components/themed-text';
 import { Circle, CheckCircle, Trash2, Plus, Filter } from 'lucide-react-native';
 
+type FilterType = 'all' | 'todo' | 'completed';
+
+const VALID_FILTERS: FilterType[] = ['all', 'todo', 'completed'];
+
 export default function ListsScreen() {
   const theme = useTheme();
   const { tasks, addTask, toggleTask, deleteTask } = useTasks();
+  const params = useLocalSearchParams<{ filter?: string }>();
+
+  const initialFilter = VALID_FILTERS.includes(params.filter as FilterType)
+    ? (params.filter as FilterType)
+    : 'all';
 
   const [newTaskTitle, setNewTaskTitle] = useState('');
-  const [filter, setFilter] = useState<'all' | 'todo' | 'completed'>('all');
+  const [filter, setFilter] = useState<FilterType>(initialFilter);
   const [refreshing, setRefreshing] = useState(false);
 
   const onRefresh = () => {

@@ -145,6 +145,7 @@ Dashboard now shows live data instead of hardcoded mock stats:
 - "Active Tasks" card shows count of incomplete tasks from context.
 - "Tasks Done" card shows count of completed tasks from context.
 - "Growth" card shows week-over-week growth percentage in tasks added.
+- "Active Tasks" and "Tasks Done" cards are clickable — navigate to the lists screen with the relevant filter pre-applied (`?filter=todo` / `?filter=completed`).
 
 #### [MODIFY] [lists.tsx](src/app/(main)/lists.tsx)
 
@@ -154,6 +155,7 @@ Migrated from local `useState` to shared `useTasks()` context:
 - Task operations (`addTask`, `toggleTask`, `deleteTask`) now use context methods.
 - Tasks are persisted across sessions via AsyncStorage.
 - All existing UI behavior (filters, add, delete, toggle) preserved.
+- Reads `filter` query parameter from the URL (via `useLocalSearchParams`) to set the initial filter state, enabling deep-link navigation from the dashboard stat cards.
 
 ---
 
