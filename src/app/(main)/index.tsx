@@ -1,7 +1,10 @@
 import { ThemedText } from '@/components/themed-text';
 import { Card, CardContent } from '@/components/ui/Card';
 import { useAuth } from '@/context/auth';
+import { useTasks } from '@/context/tasks';
+import { useProfileStorage } from '@/hooks/use-profile-storage';
 import { useTheme } from '@/hooks/use-theme';
+import { getActiveTasks, getCompletedTasks, getWeekOverWeekGrowth } from '@/utils/task-stats';
 import { useRouter } from 'expo-router';
 import {
   ArrowRight,
@@ -28,11 +31,13 @@ export default function DashboardScreen() {
   const theme = useTheme();
   const router = useRouter();
   const colorScheme = useColorScheme();
+  const { tasks } = useTasks();
+  const { profile } = useProfileStorage(session);
 
-  const mockStats = [
-    { label: 'Active Lists', value: '4', icon: FolderKanban },
-    { label: 'Tasks Done', value: '28', icon: CheckCircle },
-    { label: 'Growth', value: '+12%', icon: TrendingUp },
+  const stats = [
+    { label: 'Active Tasks', value: String(getActiveTasks(tasks)), icon: FolderKanban },
+    { label: 'Tasks Done', value: String(getCompletedTasks(tasks)), icon: CheckCircle },
+    { label: 'Growth', value: getWeekOverWeekGrowth(tasks), icon: TrendingUp },
   ];
 
   const recentActivity = [
@@ -52,7 +57,7 @@ export default function DashboardScreen() {
               Welcome back,
             </ThemedText>
             <ThemedText type="default" style={[styles.username, { color: theme.text }]}>
-              {session || 'User'}
+              {profile.displayName || 'User'}
             </ThemedText>
           </View>
           <View style={styles.headerActions}>
@@ -87,7 +92,7 @@ export default function DashboardScreen() {
 
         {/* Stats Grid */}
         <View style={styles.statsGrid}>
-          {mockStats.map((stat, i) => {
+          {stats.map((stat, i) => {
             const Icon = stat.icon;
             return (
               <Card key={i} style={styles.statCard}>

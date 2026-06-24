@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   View,
@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { useAuth } from '@/context/auth';
 import { useTheme } from '@/hooks/use-theme';
+import { useProfileStorage } from '@/hooks/use-profile-storage';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
@@ -18,20 +19,39 @@ import { User, Mail, Shield, Bell, HelpCircle } from 'lucide-react-native';
 export default function ProfileScreen() {
   const { session, signOut } = useAuth();
   const theme = useTheme();
+  const { profile, isLoaded, saveProfile, clearProfile } = useProfileStorage(session);
 
-  const [displayName, setDisplayName] = useState(session ? session.split('@')[0] : 'Admin');
-  const [email, setEmail] = useState(session || 'admin@example.com');
-  const [notifications, setNotifications] = useState(true);
+  const [displayName, setDisplayName] = useState(profile.displayName);
+  const [email, setEmail] = useState(profile.email);
+  const [notifications, setNotifications] = useState(profile.notifications);
   const [isSaving, setIsSaving] = useState(false);
 
-  const handleSave = () => {
+  useEffect(() => {
+    if (isLoaded) {
+      setDisplayName(profile.displayName);
+      setEmail(profile.email);
+      setNotifications(profile.notifications);
+    }
+  }, [isLoaded]);
+
+  const handleSave = async () => {
     setIsSaving(true);
-    setTimeout(() => {
-      setIsSaving(false);
-      Alert.alert('Success', 'Profile changes saved successfully.', [
-        { text: 'OK' }
-      ]);
-    }, 1000);
+    await saveProfile({ displayName, email, notifications });
+    setIsSaving(false);
+    Alert.alert('Success', 'Profile changes saved successfully.', [
+      { text: 'OK' }
+    ]);
+  };
+
+  const handleToggleNotifications = async () => {
+    const next = !notifications;
+    setNotifications(next);
+    await saveProfile({ displayName, email, notifications: next });
+  };
+
+  const handleSignOut = async () => {
+    await clearProfile();
+    signOut();
   };
 
   const getInitials = () => {
@@ -113,7 +133,7 @@ export default function ProfileScreen() {
                 variant={notifications ? 'default' : 'outline'}
                 size="sm"
                 label={notifications ? 'On' : 'Off'}
-                onPress={() => setNotifications(!notifications)}
+                onPress={handleToggleNotifications}
                 style={styles.toggleButton}
               />
             </View>
@@ -158,7 +178,7 @@ export default function ProfileScreen() {
         <Button
           variant="destructive"
           label="Sign Out"
-          onPress={signOut}
+          onPress={handleSignOut}
           style={styles.signOutButton}
         />
 

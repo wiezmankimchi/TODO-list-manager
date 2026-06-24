@@ -9,36 +9,21 @@ import {
   Platform,
 } from 'react-native';
 import { useTheme } from '@/hooks/use-theme';
+import { useTasks } from '@/context/tasks';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
 import { ThemedText } from '@/components/themed-text';
 import { Circle, CheckCircle, Trash2, Plus, Filter } from 'lucide-react-native';
 
-interface Task {
-  id: string;
-  title: string;
-  completed: boolean;
-  priority: 'low' | 'medium' | 'high';
-}
-
 export default function ListsScreen() {
   const theme = useTheme();
-
-  // Initial task states
-  const [tasks, setTasks] = useState<Task[]>([
-    { id: '1', title: 'Design premium login screen mockup', completed: true, priority: 'high' },
-    { id: '2', title: 'Install lucide icons pack', completed: true, priority: 'medium' },
-    { id: '3', title: 'Implement AuthContext and routing guards', completed: false, priority: 'high' },
-    { id: '4', title: 'Review Expo Router native tabs performance', completed: false, priority: 'low' },
-    { id: '5', title: 'Polish grayscale UI transitions', completed: false, priority: 'medium' },
-  ]);
+  const { tasks, addTask, toggleTask, deleteTask } = useTasks();
 
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [filter, setFilter] = useState<'all' | 'todo' | 'completed'>('all');
   const [refreshing, setRefreshing] = useState(false);
 
-  // Pull-to-refresh simulation
   const onRefresh = () => {
     setRefreshing(true);
     setTimeout(() => {
@@ -48,26 +33,8 @@ export default function ListsScreen() {
 
   const handleAddTask = () => {
     if (!newTaskTitle.trim()) return;
-    const newTask: Task = {
-      id: Date.now().toString(),
-      title: newTaskTitle.trim(),
-      completed: false,
-      priority: 'medium',
-    };
-    setTasks([newTask, ...tasks]);
+    addTask(newTaskTitle.trim());
     setNewTaskTitle('');
-  };
-
-  const toggleTask = (id: string) => {
-    setTasks(
-      tasks.map((task) =>
-        task.id === id ? { ...task, completed: !task.completed } : task
-      )
-    );
-  };
-
-  const deleteTask = (id: string) => {
-    setTasks(tasks.filter((task) => task.id !== id));
   };
 
   // Filter tasks based on selected filter

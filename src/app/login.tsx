@@ -1,49 +1,58 @@
-import React, { useState } from 'react';
+import { ThemedText } from "@/components/themed-text";
+import { Button } from "@/components/ui/Button";
 import {
-  StyleSheet,
-  View,
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/Card";
+import { Input } from "@/components/ui/Input";
+import { useAuth } from "@/context/auth";
+import { useTheme } from "@/hooks/use-theme";
+import { KeyRound, Mail, Sparkles } from "lucide-react-native";
+import { useState } from "react";
+import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  StyleSheet,
   useColorScheme,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useAuth } from '@/context/auth';
-import { Input } from '@/components/ui/Input';
-import { Button } from '@/components/ui/Button';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/Card';
-import { ThemedText } from '@/components/themed-text';
-import { useTheme } from '@/hooks/use-theme';
-import { KeyRound, Mail, Sparkles } from 'lucide-react-native';
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function LoginScreen() {
   const { signIn } = useAuth();
   const theme = useTheme();
   const colorScheme = useColorScheme();
-  
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>(
+    {},
+  );
 
   const validate = () => {
     const newErrors: { email?: string; password?: string } = {};
     const sanitizedEmail = email.trim().toLowerCase();
-    
+
     if (!sanitizedEmail) {
-      newErrors.email = 'Email is required';
+      newErrors.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(sanitizedEmail)) {
-      newErrors.email = 'Please enter a valid email';
+      newErrors.email = "Please enter a valid email";
     }
-    
+
     if (!password) {
-      newErrors.password = 'Password is required';
+      newErrors.password = "Password is required";
     }
 
     if (Object.keys(newErrors).length === 0) {
-      if (sanitizedEmail !== 'demo@example.com' || password !== 'password123') {
-        newErrors.email = 'Invalid email or password';
-        newErrors.password = 'Invalid email or password';
+      if (sanitizedEmail !== "demo@example.com" || password !== "password123") {
+        newErrors.email = "Invalid email or password";
+        newErrors.password = "Invalid email or password";
       }
     }
 
@@ -63,9 +72,11 @@ export default function LoginScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: theme.background }]}
+    >
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.keyboardView}
       >
         <ScrollView
@@ -74,13 +85,25 @@ export default function LoginScreen() {
         >
           {/* Logo / Brand */}
           <View style={styles.brandContainer}>
-            <View style={[styles.logoOutline, { borderColor: theme.border, backgroundColor: theme.secondary }]}>
+            <View
+              style={[
+                styles.logoOutline,
+                { borderColor: theme.border, backgroundColor: theme.secondary },
+              ]}
+            >
               <Sparkles size={28} color={theme.text} />
             </View>
             <ThemedText type="subtitle" style={styles.brandText}>
-              modest-bardeen
+              GreenZincGrayhound
             </ThemedText>
-            <ThemedText type="small" style={{ color: theme.textSecondary, textAlign: 'center', marginTop: 4 }}>
+            <ThemedText
+              type="small"
+              style={{
+                color: theme.textSecondary,
+                textAlign: "center",
+                marginTop: 4,
+              }}
+            >
               A premium grayscale mobile experience
             </ThemedText>
           </View>
@@ -90,7 +113,9 @@ export default function LoginScreen() {
             <CardHeader>
               <CardTitle>Sign In</CardTitle>
               <CardDescription>
-                Use mock account: <ThemedText type="code">demo@example.com</ThemedText> with password <ThemedText type="code">password123</ThemedText>
+                Use mock account:{" "}
+                <ThemedText type="code">demo@example.com</ThemedText> with
+                password <ThemedText type="code">password123</ThemedText>
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -148,11 +173,11 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    justifyContent: 'center',
+    justifyContent: "center",
     padding: 24,
   },
   brandContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 32,
   },
   logoOutline: {
@@ -160,17 +185,17 @@ const styles = StyleSheet.create({
     height: 60,
     borderRadius: 16,
     borderWidth: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: 16,
   },
   brandText: {
     fontSize: 26,
-    fontWeight: '700',
+    fontWeight: "700",
     letterSpacing: -1,
   },
   card: {
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOpacity: 0.08,
     shadowRadius: 10,
     elevation: 4,
@@ -183,7 +208,7 @@ const styles = StyleSheet.create({
     height: 48,
   },
   footerNote: {
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 24,
   },
 });
