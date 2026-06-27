@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "GreenZincGrayhound",
-    "slug": "GreenZincGrayhound",
+    "name": "QRScanner",
+    "slug": "QRScanner",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -9,7 +9,7 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/expo.icon",
-      "bundleIdentifier": "com.wiezmankimchi.GreenZincGrayhound"
+      "bundleIdentifier": "com.wiezmankimchi.QRScanner"
     },
     "android": {
       "adaptiveIcon": {
@@ -19,7 +19,7 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.wiezmankimchi.GreenZincGrayhound"
+      "package": "com.wiezmankimchi.QRScanner"
     },
     "web": {
       "output": "static",
@@ -36,7 +36,14 @@
             "imageWidth": 76
           }
         }
-      ]
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow QRScanner to use the camera to scan QR codes and capture procedure images."
+        }
+      ],
+      "expo-sharing"
     ],
     "experiments": {
       "typedRoutes": true,

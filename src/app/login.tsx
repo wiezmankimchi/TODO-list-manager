@@ -94,7 +94,7 @@ export default function LoginScreen() {
               <Sparkles size={28} color={theme.text} />
             </View>
             <ThemedText type="subtitle" style={styles.brandText}>
-              GreenZincGrayhound
+              QRScanner
             </ThemedText>
             <ThemedText
               type="small"

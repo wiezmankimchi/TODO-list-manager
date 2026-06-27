@@ -1,195 +1,207 @@
-# Expo App with Expo-Router & Shadcn-Style Grayscale Theme
+# Plan: Transform QRScanner into Dental Procedure Documentation App
 
-A premium, modern React Native Expo application built with `expo-router` featuring a mock authentication flow, modern grayscale styling, and a clean Shadcn-inspired custom component library.
+## Context
 
-## User Review Required
+The app is named **QRScanner** but currently contains a generic task-management demo (dashboard, lists, profile) built on Expo SDK 56 with expo-router. The actual purpose is a **dental procedure documentation workflow**: scan a QR code for patient/appointment info, capture images of vitals and stickers, OCR the text, generate a PDF report, and upload everything to OpenDental Cloud.
 
-> [!IMPORTANT]
-> The app will use custom, highly flexible UI components styled with React Native's `StyleSheet` instead of `nativewind`/Tailwind CSS. This approach ensures maximum stability across Expo versions, avoids Babel/Metro configuration issues, and perfectly mimics Shadcn UI's look-and-feel (zinc palette, border treatments, custom buttons/inputs).
-
-## Proposed Changes
-
-We will generate a new Expo app in the current directory and reorganize/create files as detailed below.
-
-### Setup and Configuration
-
-#### [NEW] [package.json](file:///Users/wiezmankimchi/Documents/antigravity/GreenZincGrayhound/package.json)
-
-We will initialize the workspace by running `create-expo-app` with the default template.
-
-### Theme & Styled Components
-
-#### [NEW] [theme.ts](file:///Users/wiezmankimchi/Documents/antigravity/GreenZincGrayhound/constants/theme.ts)
-
-A design system file containing the Zinc color palette for both light and dark modes:
-
-- Primary/background/border/foreground/muted palettes using clean zinc tones.
-- Dark/Light mode color scheme hook integration.
-
-#### [NEW] [Button.tsx](file:///Users/wiezmankimchi/Documents/antigravity/GreenZincGrayhound/components/ui/Button.tsx)
-
-Shadcn-style button component supporting:
-
-- Variants: `default` (zinc-900), `secondary` (zinc-100), `outline` (border zinc-200), `ghost`, `destructive` (red-600).
-- Sizes: `default`, `sm`, `lg`.
-- Custom interactive press states with smooth scale animations.
-
-#### [NEW] [Input.tsx](file:///Users/wiezmankimchi/Documents/antigravity/GreenZincGrayhound/components/ui/Input.tsx)
-
-Shadcn-style input component with:
-
-- Rounded corners, thin zinc-200 border, and placeholder coloring.
-- Focus state representation (zinc-900 border / ring representation).
-- Error and label support.
-
-#### [NEW] [Card.tsx](file:///Users/wiezmankimchi/Documents/antigravity/GreenZincGrayhound/components/ui/Card.tsx)
-
-Shadcn-style card containers:
-
-- `Card`, `CardHeader`, `CardTitle`, `CardDescription`, `CardContent`, `CardFooter`.
-- Rendered with thin borders, clean borders, and a beautiful background.
+This plan replaces the task management features with the real QR-based workflow while keeping auth, profile, the UI component library (Button, Card, Input), and the grayscale zinc theme.
 
 ---
 
-### Routing & Screens
+## What stays, what goes
 
-#### [NEW] [auth.tsx](file:///Users/wiezmankimchi/Documents/antigravity/GreenZincGrayhound/context/auth.tsx)
-
-A simple React Context Provider to handle mock authentication state (login/logout) and redirect users using `expo-router`'s router.
-
-#### [MODIFY] [\_layout.tsx](file:///Users/wiezmankimchi/Documents/antigravity/GreenZincGrayhound/app/_layout.tsx)
-
-Root layout that loads custom fonts/icons, establishes the `AuthProvider`, and handles root theme configuration.
-
-#### [NEW] [login.tsx](file:///Users/wiezmankimchi/Documents/antigravity/GreenZincGrayhound/app/login.tsx)
-
-Login screen styled with modern gray shades containing:
-
-- App logo/icon design.
-- Email and Password fields.
-- Submit button that sets the auth token and redirects.
-
-#### [NEW] [(app)/\_layout.tsx](<file:///Users/wiezmankimchi/Documents/antigravity/GreenZincGrayhound/app/(app)/_layout.tsx>)
-
-Protected layout utilizing `expo-router` stack or tabs, checking the auth context. If unauthorized, automatically redirects to `/login`.
-
-#### [NEW] [(app)/index.tsx](<file:///Users/wiezmankimchi/Documents/antigravity/GreenZincGrayhound/app/(app)/index.tsx>)
-
-Main dashboard screen with links/buttons to Profile/Settings and Lists, beautiful dashboard summary cards, and quick actions.
-
-#### [NEW] [(app)/profile.tsx](<file:///Users/wiezmankimchi/Documents/antigravity/GreenZincGrayhound/app/(app)/profile.tsx>)
-
-Profile and settings screen styled in modern grays with mock user details, switch options, and a logout button.
-
-#### [NEW] [(app)/lists.tsx](<file:///Users/wiezmankimchi/Documents/antigravity/GreenZincGrayhound/app/(app)/lists.tsx>)
-
-A beautiful list view demonstrating scrolling list items, pull-to-refresh, filters, and custom badge elements.
+| Keep unchanged | Remove | Replace / Modify |
+|---|---|---|
+| `src/app/login.tsx` | `src/context/tasks.tsx` | `src/app/_layout.tsx` (swap TaskProvider → ProcedureProvider) |
+| `src/context/auth.tsx` | `src/types/task.ts` | `src/app/(main)/_layout.tsx` (new screens in Stack) |
+| `src/components/ui/*` (Button, Card, Input) | `src/utils/task-stats.ts` | `src/app/(main)/index.tsx` (rewrite as workflow home) |
+| `src/constants/theme.ts` | `src/app/(main)/lists.tsx` | `src/app/(main)/profile.tsx` (add OpenDental config section) |
+| `src/hooks/use-profile-storage.ts` | Task-related test files | `app.json` (add expo-camera plugin, rename app) |
+| `src/hooks/use-theme.ts`, `use-color-scheme.ts` | | |
 
 ---
 
-### Data Persistence
+## New dependencies
 
-#### [NEW] [use-profile-storage.ts](src/hooks/use-profile-storage.ts)
+```
+npx expo install expo-camera expo-file-system expo-print expo-sharing
+npm install @react-native-ml-kit/text-recognition
+```
 
-A custom hook using `@react-native-async-storage/async-storage` to persist profile data (display name, email, notifications preference) across app sessions. Loads saved data on mount, exposes `saveProfile` and `clearProfile` methods.
+- **expo-camera** — CameraView with `onBarcodeScanned` for QR codes + `takePictureAsync` for image capture
+- **@react-native-ml-kit/text-recognition** — on-device OCR via Google ML Kit (works offline, no cloud calls)
+- **expo-print** — `printToFileAsync({ html })` to generate PDF from HTML template
+- **expo-file-system** — read files as base64 for upload
+- **expo-sharing** — optional PDF preview/share
 
-#### [MODIFY] [auth.tsx](src/context/auth.tsx)
-
-Updated to persist the auth session in AsyncStorage so users stay logged in across app restarts:
-
-- Session saved on `signIn`, removed on `signOut`.
-- Added `isLoading` state to prevent navigation flicker while restoring the stored session.
-
-#### [MODIFY] [profile.tsx](src/app/(main)/profile.tsx)
-
-Updated to use the `useProfileStorage` hook:
-
-- Text fields (display name, email) use local editing state and persist only when "Save Details" is pressed.
-- Notifications toggle persists immediately on change.
-- Sign out clears stored profile data alongside the auth session.
+All require dev builds (already set up). Add `expo-camera` to `app.json` plugins with camera permission string.
 
 ---
 
-### Shared Task Data Layer & Dashboard Live Stats
+## Workflow: capture first, process later
 
-#### [NEW] [task.ts](src/types/task.ts)
+The field capture phase is fast — no OCR processing between shots. All heavy processing (OCR, PDF) happens in a single batch step after all images are captured.
 
-Shared `Task` interface with `createdAt` timestamp field for tracking when tasks are added.
+1. **Scan QR** → extract JSON, confirm patient/appointment data
+2. **Capture vitals photo** → just take the picture, store URI
+3. **Capture stickers photo** → just take the picture, store URI
+4. **Process & Review** → run OCR on both images in batch, parse results, let user edit, generate PDF with all data (QR + vitals + stickers)
+5. **Upload** → push PDF + images to OpenDental
 
-#### [NEW] [task-stats.ts](src/utils/task-stats.ts)
+## Route structure (after)
 
-Pure utility functions for dashboard statistics:
-
-- `getActiveTasks(tasks)` — count of incomplete tasks.
-- `getCompletedTasks(tasks)` — count of completed tasks.
-- `getWeekOverWeekGrowth(tasks)` — formatted percentage string showing week-over-week change in tasks added (Monday-based weeks).
-
-#### [NEW] [tasks.tsx](src/context/tasks.tsx)
-
-`TaskProvider` React Context with `useTasks()` hook:
-
-- Shared task state consumed by both dashboard and lists screens.
-- Persists tasks to AsyncStorage (`@tasks_data`).
-- API: `addTask`, `toggleTask`, `deleteTask`, `tasks`, `isLoaded`.
-- Default 5 mock tasks with dynamic `createdAt` timestamps spread across last 2 weeks.
-
-#### [MODIFY] [_layout.tsx](src/app/_layout.tsx)
-
-Wrapped app with `<TaskProvider>` inside `<AuthProvider>`.
-
-#### [MODIFY] [index.tsx](src/app/(main)/index.tsx)
-
-Dashboard now shows live data instead of hardcoded mock stats:
-
-- Greeting uses display name from profile storage instead of raw session email.
-- "Active Tasks" card shows count of incomplete tasks from context.
-- "Tasks Done" card shows count of completed tasks from context.
-- "Growth" card shows week-over-week growth percentage in tasks added.
-- "Active Tasks" and "Tasks Done" cards are clickable — navigate to the lists screen with the relevant filter pre-applied (`?filter=todo` / `?filter=completed`).
-
-#### [MODIFY] [lists.tsx](src/app/(main)/lists.tsx)
-
-Migrated from local `useState` to shared `useTasks()` context:
-
-- Removed local `Task` interface — imports from `@/types/task`.
-- Task operations (`addTask`, `toggleTask`, `deleteTask`) now use context methods.
-- Tasks are persisted across sessions via AsyncStorage.
-- All existing UI behavior (filters, add, delete, toggle) preserved.
-- Reads `filter` query parameter from the URL (via `useLocalSearchParams`) to set the initial filter state, enabling deep-link navigation from the dashboard stat cards.
+```
+src/app/
+  _layout.tsx         ← AuthProvider + ProcedureProvider (was TaskProvider)
+  login.tsx           ← unchanged
+  (main)/
+    _layout.tsx       ← Stack with auth guard + new screens
+    index.tsx         ← Workflow home: "Start Procedure" / "Resume"
+    scan.tsx          ← Phase 1: QR scan + confirm
+    capture.tsx       ← Phase 2-3: Capture vitals + stickers images (no OCR yet)
+    process.tsx       ← Phase 4: Batch OCR + review + PDF generation
+    upload.tsx        ← Phase 5: Upload to OpenDental
+    profile.tsx       ← Settings + OpenDental API config
+```
 
 ---
 
-### Test Infrastructure
+## New files
 
-#### [NEW] Jest test setup
+### Types
 
-- Installed `jest`, `jest-expo`, `@testing-library/react-native`, `@types/jest`.
-- Configured `jest-expo` preset with CSS mock and `@/` path alias resolution.
-- Added `npm test` script.
+**`src/types/procedure.ts`** — Core data structures:
+- `QRData` — `{ AptDate, PatName, FName, LName }`
+- `VitalSign` — `{ label, value }` (e.g., "Blood Pressure", "120/80")
+- `VitalsData` — `{ imageUri, rawOcrText, vitals: VitalSign[], capturedAt }`
+- `StickerItem` — `{ serialNumber?, description, rawText }`
+- `StickersData` — `{ imageUri, rawOcrText, items: StickerItem[], capturedAt }`
+- `ProcedurePhase` — `'idle' | 'scanned' | 'captured' | 'processed' | 'uploaded'`
+- `ProcedureState` — full workflow state object
 
-#### Test Suites (34 tests total)
+**`src/types/opendental.ts`** — `OpenDentalConfig`, `OpenDentalPatient`, `OpenDentalDocumentPayload`
 
-- `src/utils/__tests__/task-stats.test.ts` — unit tests for active/completed counts and growth % edge cases.
-- `src/context/__tests__/tasks.test.tsx` — TaskProvider add/toggle/delete behavior and AsyncStorage persistence.
-- `src/context/__tests__/auth.test.tsx` — auth signIn/signOut and session restoration.
-- `src/hooks/__tests__/use-profile-storage.test.tsx` — profile load/save/clear and email-to-name fallback.
-- `src/app/(main)/__tests__/index.test.tsx` — dashboard integration: greeting, stat cards, nav links.
+### State management
+
+**`src/context/procedure.tsx`** — `ProcedureProvider` + `useProcedure()` hook
+- `useReducer` for state transitions (SET_QR_DATA, SET_VITALS_IMAGE, SET_STICKERS_IMAGE, SET_OCR_RESULTS, SET_PDF_URI, SET_UPLOAD_RESULT, RESET)
+- Persists to AsyncStorage (`@procedure_state`) so in-progress procedures survive crashes
+- Exposes `hasIncompleteProcedure` for the resume flow on home screen
+
+### Services
+
+**`src/services/opendental.ts`** — OpenDental Cloud REST API client
+- `searchPatient(config, firstName, lastName)` — `GET /patients?LName=&FName=`
+- `uploadDocument(config, payload)` — `POST /documents` with base64 DocBytes
+- Auth via `Authorization: ODFHIR <DeveloperKey>/<CustomerKey>` headers
+- Configuration stored via new `useOpenDentalConfig` hook
+
+### Utilities
+
+**`src/utils/ocr-parser.ts`** — Pure parsing functions:
+- `parseVitalsText(rawText): VitalSign[]` — regex for BP, Pulse, O2, Temp, Respiration patterns
+- `parseStickerText(rawText): StickerItem[]` — regex for REF/SN/LOT prefixes + descriptions
+
+**`src/utils/pdf-template.ts`** — `generateProcedureHTML(qrData, vitals, stickers): string`
+- Professional dental report HTML with inline CSS
+- Sections: patient info, vitals table, materials/implants table
+- Uses zinc palette for consistent branding
+
+### Hooks
+
+**`src/hooks/use-opendental-config.ts`** — AsyncStorage-backed config hook
+- Follows the exact pattern of existing `use-profile-storage.ts`
+- Stores `{ baseUrl, developerKey, customerKey }`
+
+### UI Components
+
+**`src/components/ui/StepIndicator.tsx`** — Horizontal step progress bar for workflow screens (Scan → Capture → Process → Upload)
+**`src/components/ui/CameraOverlay.tsx`** — Camera capture button + frame guide overlay (reused for QR scan and both image captures)
 
 ---
 
-## Verification Plan
+## Screen-by-screen behavior
 
-### Automated Verification
+### Home (`index.tsx` rewrite)
+- "Start New Procedure" button (prominent, uses existing Button component)
+- If `hasIncompleteProcedure`: show "Resume Procedure" card with patient name + current phase
+- Link to profile/settings
 
-- `npx tsc --noEmit` — TypeScript type checking.
-- `npx expo export --platform web` — verify build succeeds.
-- `npm test` — run all 34 tests (5 suites).
+### Scan (`scan.tsx`) — Phase 1
+- `useCameraPermissions()` → request on mount, show "Open Settings" if denied
+- `CameraView` with `barcodeScannerSettings={{ barcodeTypes: ['qr'] }}`
+- Parse scanned data as JSON, validate required fields (AptDate, PatName, FName, LName)
+- Show parsed data in Card overlay for confirmation
+- `scanLock` ref to prevent duplicate scans
+- On confirm → save QR data to context, navigate to `/capture`
 
-### Manual Verification
+### Capture (`capture.tsx`) — Phases 2-3 (image capture only, no OCR)
+- Two-step capture screen with a step indicator ("Vitals" / "Stickers")
+- **Step 1 — Vitals**: Camera preview → capture button → `takePictureAsync()` → show thumbnail preview with "Retake" / "Next" buttons → stores image URI in context
+- **Step 2 — Stickers**: Same camera flow → capture → preview → "Retake" / "Done"
+- On "Done" → save both image URIs to context, navigate to `/process`
+- No OCR runs on this screen — capture is fast and uninterrupted
 
-- Deploy the Expo application and review layout transitions.
-- Check the visual styling of custom inputs, buttons, cards, and grayscale palette alignment.
-- Verify authentication guard: typing in `/` redirects to `/login`, and signing in correctly takes the user to `/`.
-- Dashboard greeting shows display name, not email.
-- Add/complete/delete tasks in lists, verify dashboard stat cards update.
-- Restart app and verify tasks and profile persist.
+### Process (`process.tsx`) — Phase 4 (batch OCR + review + PDF)
+- On mount, runs OCR on both images in sequence:
+  1. `TextRecognition.recognize(vitalsImageUri)` → `parseVitalsText()`
+  2. `TextRecognition.recognize(stickersImageUri)` → `parseStickerText()`
+- Shows a loading/progress indicator during OCR processing
+- After OCR completes, displays all extracted data for review:
+  - **Patient info** card (from QR data)
+  - **Vitals** section — editable list of vital signs (label + value in Input components)
+  - **Stickers/Materials** section — editable list of items (serial number + description)
+  - "Add Item" buttons for manual entries if OCR missed something
+- **"Generate PDF"** button:
+  1. Calls `generateProcedureHTML(qrData, vitals, stickers)` to build HTML
+  2. Calls `Print.printToFileAsync({ html })` to create PDF
+  3. Stores PDF URI in context
+- "Preview PDF" via `Sharing.shareAsync()`
+- "Upload to OpenDental" → navigate to `/upload`
+
+### Upload (`upload.tsx`) — Phase 5
+- Sequential progress: patient lookup → PDF upload → vitals image upload → stickers image upload
+- Patient search by FName/LName; picker if multiple matches; manual PatNum entry if none
+- Per-step success/failure indicators
+- "Done — Start New" calls `resetProcedure()` and navigates home
+- Retry button on failure (state persisted, nothing lost)
+
+### Profile (`profile.tsx` modification)
+- Add "OpenDental API Configuration" section below existing profile fields
+- Three Input fields: Base URL, Developer Key, Customer Key
+- "Save API Settings" button using `useOpenDentalConfig` hook
+
+---
+
+## Implementation order
+
+1. **Install deps + update app.json** — expo-camera plugin, new packages
+2. **Define types** — `procedure.ts`, `opendental.ts`
+3. **Create ProcedureContext** — replace TaskProvider in root layout, delete task files
+4. **Create utilities** — `ocr-parser.ts`, `pdf-template.ts` (pure functions, testable immediately)
+5. **Create OpenDental service + config hook** — `opendental.ts`, `use-opendental-config.ts`
+6. **Create UI components** — `StepIndicator.tsx`, `CameraOverlay.tsx`
+7. **Build screens** — home → scan → capture → process → upload (in order)
+8. **Update layout + profile** — new Stack.Screen entries, OpenDental config section
+9. **Write tests** — `ocr-parser.test.ts`, `procedure.test.tsx`, `opendental.test.ts`
+
+---
+
+## Verification
+
+### Automated
+- `npx tsc --noEmit` — type checking
+- `npx expo export --platform web` — build check (camera/OCR will be stubbed on web)
+- `npm test` — run updated test suites
+
+### Manual (on device via dev build)
+- Login → home screen shows "Start New Procedure"
+- Scan a test QR code with `{"AptDate":"2026-06-25","PatName":"Doe, John","FName":"John","LName":"Doe"}`
+- Verify parsed data displays correctly, confirm → navigates to capture
+- Capture vitals image → preview thumbnail → "Next"
+- Capture stickers image → preview thumbnail → "Done" → navigates to process
+- Process screen: OCR runs on both images, shows loading, then displays extracted data
+- Edit OCR results if needed → "Generate PDF" → preview looks correct
+- Upload to OpenDental with real credentials → verify documents appear in patient record
+- Kill app mid-workflow → reopen → verify "Resume Procedure" appears with correct state
+- Profile screen → save/load OpenDental API config

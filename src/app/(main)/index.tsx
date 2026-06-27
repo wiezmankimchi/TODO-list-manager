@@ -1,62 +1,58 @@
 import { ThemedText } from '@/components/themed-text';
 import { Card, CardContent } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
 import { useAuth } from '@/context/auth';
-import { useTasks } from '@/context/tasks';
+import { useProcedure } from '@/context/procedure';
 import { useProfileStorage } from '@/hooks/use-profile-storage';
 import { useTheme } from '@/hooks/use-theme';
-import { getActiveTasks, getCompletedTasks, getWeekOverWeekGrowth } from '@/utils/task-stats';
 import { useRouter } from 'expo-router';
 import {
   ArrowRight,
-  CheckCircle,
-  ChevronRight,
-  FolderKanban,
-  ListTodo,
+  Camera,
   LogOut,
+  RefreshCw,
   Settings,
-  TrendingUp,
   User,
 } from 'lucide-react-native';
 import {
   Pressable,
   ScrollView,
   StyleSheet,
-  useColorScheme,
-  useWindowDimensions,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-export default function DashboardScreen() {
+const PHASE_LABELS: Record<string, string> = {
+  scanned: 'QR Scanned — ready to capture images',
+  captured: 'Images captured — ready to process',
+  processed: 'Processed — ready to upload',
+};
+
+export default function HomeScreen() {
   const { session, signOut } = useAuth();
+  const { state, hasIncompleteProcedure, resetProcedure } = useProcedure();
   const theme = useTheme();
   const router = useRouter();
-  const colorScheme = useColorScheme();
-  const { width: screenWidth } = useWindowDimensions();
-  const { tasks } = useTasks();
   const { profile } = useProfileStorage(session);
 
-  const padding = 20;
-  const gap = 12;
-  const cardWidth = (screenWidth - padding * 2 - gap * 2) / 3;
-
-  const stats = [
-    { label: 'Active Tasks', value: String(getActiveTasks(tasks)), icon: FolderKanban, onPress: () => router.push('/lists?filter=todo') },
-    { label: 'Tasks Done', value: String(getCompletedTasks(tasks)), icon: CheckCircle, onPress: () => router.push('/lists?filter=completed') },
-    { label: 'Growth', value: getWeekOverWeekGrowth(tasks), icon: TrendingUp },
-  ];
-
-  const recentActivity = [
-    { id: '1', title: 'Updated profile details', time: '2 hours ago', type: 'profile' },
-    { id: '2', title: 'Created list "Project Bardeen"', time: 'Yesterday', type: 'list' },
-    { id: '3', title: 'Completed task "Define colors"', time: '2 days ago', type: 'task' },
-  ];
+  const resumeRoute = (): string => {
+    switch (state.phase) {
+      case 'scanned':
+        return '/capture';
+      case 'captured':
+        return '/process';
+      case 'processed':
+        return '/upload';
+      default:
+        return '/scan';
+    }
+  };
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-        
-        {/* Custom Header */}
+
+        {/* Header */}
         <View style={styles.header}>
           <View>
             <ThemedText type="small" style={{ color: theme.textSecondary }}>
@@ -87,127 +83,85 @@ export default function DashboardScreen() {
           <CardContent style={styles.heroContent}>
             <View style={styles.heroTextSection}>
               <ThemedText style={[styles.heroTitle, { color: theme.primaryForeground }]}>
-                Aesthetics & Simplicity
+                Dental Procedure Scanner
               </ThemedText>
               <ThemedText style={[styles.heroSub, { color: theme.mutedForeground }]}>
-                Clean grayscale interfaces designed for focus and productivity.
+                Scan QR codes, capture vitals and stickers, generate reports.
               </ThemedText>
             </View>
           </CardContent>
         </Card>
 
-        {/* Stats Grid */}
-        <View style={styles.statsGrid}>
-          {stats.map((stat, i) => {
-            const Icon = stat.icon;
-            return (
-              <Pressable
-                key={i}
-                onPress={stat.onPress}
-                disabled={!stat.onPress}
-                style={{ width: cardWidth }}
-              >
-                <Card style={styles.statCard}>
-                  <CardContent style={styles.statContent}>
-                    <View style={[styles.statIconContainer, { backgroundColor: theme.secondary }]}>
-                      <Icon size={16} color={theme.text} />
-                    </View>
-                    <ThemedText style={[styles.statValue, { color: theme.text }]} numberOfLines={1} adjustsFontSizeToFit>
-                      {stat.value}
-                    </ThemedText>
-                    <ThemedText type="small" style={[styles.statLabel, { color: theme.textSecondary }]} numberOfLines={1} adjustsFontSizeToFit>
-                      {stat.label}
-                    </ThemedText>
-                  </CardContent>
-                </Card>
-              </Pressable>
-            );
-          })}
-        </View>
-
-        {/* Navigation Links */}
-        <ThemedText type="smallBold" style={styles.sectionTitle}>
-          Explore App
-        </ThemedText>
-        
-        <View style={styles.linksContainer}>
-          <Pressable
-            onPress={() => router.push('/lists')}
-            style={({ pressed }) => [
-              styles.navLink,
-              { borderColor: theme.border, backgroundColor: theme.card },
-              pressed && { opacity: 0.8 },
-            ]}
-          >
-            <View style={styles.navLinkLeft}>
-              <View style={[styles.linkIcon, { backgroundColor: theme.secondary }]}>
-                <ListTodo size={20} color={theme.text} />
-              </View>
-              <View>
+        {/* Resume Banner */}
+        {hasIncompleteProcedure && (
+          <Card style={[styles.resumeCard, { borderColor: theme.ring }]}>
+            <CardContent style={styles.resumeContent}>
+              <View style={styles.resumeText}>
                 <ThemedText type="smallBold" style={{ color: theme.text }}>
-                  My Lists
+                  Procedure in Progress
                 </ThemedText>
                 <ThemedText type="small" style={{ color: theme.textSecondary }}>
-                  View task boards, active items, and checklists
+                  {state.qrData?.PatName ?? 'Unknown Patient'} — {PHASE_LABELS[state.phase] ?? state.phase}
                 </ThemedText>
               </View>
+              <View style={styles.resumeActions}>
+                <Button
+                  label="Resume"
+                  size="sm"
+                  onPress={() => router.push(resumeRoute() as any)}
+                  rightIcon={<ArrowRight size={14} color={theme.primaryForeground} />}
+                />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onPress={resetProcedure}
+                  leftIcon={<RefreshCw size={14} color={theme.textSecondary} />}
+                  label="Discard"
+                  labelStyle={{ color: theme.textSecondary }}
+                />
+              </View>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Start New Procedure */}
+        <Button
+          label="Start New Procedure"
+          size="lg"
+          onPress={() => {
+            if (hasIncompleteProcedure) {
+              resetProcedure();
+            }
+            router.push('/scan');
+          }}
+          leftIcon={<Camera size={20} color={theme.primaryForeground} />}
+          style={styles.startButton}
+        />
+
+        {/* Settings Link */}
+        <Pressable
+          onPress={() => router.push('/profile')}
+          style={({ pressed }) => [
+            styles.navLink,
+            { borderColor: theme.border, backgroundColor: theme.card },
+            pressed && { opacity: 0.8 },
+          ]}
+        >
+          <View style={styles.navLinkLeft}>
+            <View style={[styles.linkIcon, { backgroundColor: theme.secondary }]}>
+              <Settings size={20} color={theme.text} />
             </View>
-            <ArrowRight size={18} color={theme.textSecondary} />
-          </Pressable>
-
-          <Pressable
-            onPress={() => router.push('/profile')}
-            style={({ pressed }) => [
-              styles.navLink,
-              { borderColor: theme.border, backgroundColor: theme.card },
-              pressed && { opacity: 0.8 },
-            ]}
-          >
-            <View style={styles.navLinkLeft}>
-              <View style={[styles.linkIcon, { backgroundColor: theme.secondary }]}>
-                <Settings size={20} color={theme.text} />
-              </View>
-              <View>
-                <ThemedText type="smallBold" style={{ color: theme.text }}>
-                  Profile & Settings
-                </ThemedText>
-                <ThemedText type="small" style={{ color: theme.textSecondary }}>
-                  Account details, configurations, and dark theme
-                </ThemedText>
-              </View>
+            <View>
+              <ThemedText type="smallBold" style={{ color: theme.text }}>
+                Profile & Settings
+              </ThemedText>
+              <ThemedText type="small" style={{ color: theme.textSecondary }}>
+                Account details and OpenDental API configuration
+              </ThemedText>
             </View>
-            <ArrowRight size={18} color={theme.textSecondary} />
-          </Pressable>
-        </View>
-
-        {/* Recent Activity */}
-        <ThemedText type="smallBold" style={styles.sectionTitle}>
-          Recent Logs
-        </ThemedText>
-
-        <Card style={styles.activityCard}>
-          <CardContent style={styles.activityList}>
-            {recentActivity.map((activity, index) => (
-              <View
-                key={activity.id}
-                style={[
-                  styles.activityItem,
-                  index < recentActivity.length - 1 && { borderBottomWidth: 1, borderBottomColor: theme.border },
-                ]}
-              >
-                <View style={styles.activityText}>
-                  <ThemedText type="small" style={{ color: theme.text }}>
-                    {activity.title}
-                  </ThemedText>
-                  <ThemedText type="code" style={{ color: theme.textSecondary, fontSize: 10, marginTop: 2 }}>
-                    {activity.time}
-                  </ThemedText>
-                </View>
-                <ChevronRight size={14} color={theme.textSecondary} />
-              </View>
-            ))}
-          </CardContent>
-        </Card>
+          </View>
+          <ArrowRight size={18} color={theme.textSecondary} />
+        </Pressable>
 
       </ScrollView>
     </SafeAreaView>
@@ -265,43 +219,22 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
   },
-  sectionTitle: {
-    fontSize: 15,
-    marginBottom: 12,
-    marginTop: 8,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
+  resumeCard: {
+    marginBottom: 16,
+    borderWidth: 2,
   },
-  statsGrid: {
-    flexDirection: 'row',
+  resumeContent: {
     gap: 12,
-    marginBottom: 24,
   },
-  statCard: {
-    padding: 12,
-    marginVertical: 0,
-  },
-  statContent: {
-    alignItems: 'flex-start',
+  resumeText: {
     gap: 4,
   },
-  statIconContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 4,
+  resumeActions: {
+    flexDirection: 'row',
+    gap: 8,
   },
-  statValue: {
-    fontSize: 20,
-    fontWeight: '700',
-  },
-  statLabel: {
-    fontSize: 12,
-  },
-  linksContainer: {
-    gap: 12,
+  startButton: {
+    height: 52,
     marginBottom: 24,
   },
   navLink: {
@@ -324,22 +257,5 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  activityCard: {
-    padding: 0,
-    marginVertical: 0,
-  },
-  activityList: {
-    paddingHorizontal: 16,
-  },
-  activityItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 14,
-  },
-  activityText: {
-    flex: 1,
-    paddingRight: 16,
   },
 });

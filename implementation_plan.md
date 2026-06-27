@@ -13,20 +13,20 @@ We will generate a new Expo app in the current directory and reorganize/create f
 
 ### Setup and Configuration
 
-#### [NEW] [package.json](file:///Users/wiezmankimchi/Documents/antigravity/GreenZincGrayhound/package.json)
+#### [NEW] [package.json](./src/package.json)
 
 We will initialize the workspace by running `create-expo-app` with the default template.
 
 ### Theme & Styled Components
 
-#### [NEW] [theme.ts](file:///Users/wiezmankimchi/Documents/antigravity/GreenZincGrayhound/constants/theme.ts)
+#### [NEW] [theme.ts](./src/constants/theme.ts)
 
 A design system file containing the Zinc color palette for both light and dark modes:
 
 - Primary/background/border/foreground/muted palettes using clean zinc tones.
 - Dark/Light mode color scheme hook integration.
 
-#### [NEW] [Button.tsx](file:///Users/wiezmankimchi/Documents/antigravity/GreenZincGrayhound/components/ui/Button.tsx)
+#### [NEW] [Button.tsx](./src/components/ui/Button.tsx)
 
 Shadcn-style button component supporting:
 
@@ -34,7 +34,7 @@ Shadcn-style button component supporting:
 - Sizes: `default`, `sm`, `lg`.
 - Custom interactive press states with smooth scale animations.
 
-#### [NEW] [Input.tsx](file:///Users/wiezmankimchi/Documents/antigravity/GreenZincGrayhound/components/ui/Input.tsx)
+#### [NEW] [Input.tsx](./src/components/ui/Input.tsx)
 
 Shadcn-style input component with:
 
@@ -42,7 +42,7 @@ Shadcn-style input component with:
 - Focus state representation (zinc-900 border / ring representation).
 - Error and label support.
 
-#### [NEW] [Card.tsx](file:///Users/wiezmankimchi/Documents/antigravity/GreenZincGrayhound/components/ui/Card.tsx)
+#### [NEW] [Card.tsx](./src//components/ui/Card.tsx)
 
 Shadcn-style card containers:
 
@@ -53,15 +53,15 @@ Shadcn-style card containers:
 
 ### Routing & Screens
 
-#### [NEW] [auth.tsx](file:///Users/wiezmankimchi/Documents/antigravity/GreenZincGrayhound/context/auth.tsx)
+#### [NEW] [auth.tsx](./src/context/auth.tsx)
 
 A simple React Context Provider to handle mock authentication state (login/logout) and redirect users using `expo-router`'s router.
 
-#### [MODIFY] [\_layout.tsx](file:///Users/wiezmankimchi/Documents/antigravity/GreenZincGrayhound/app/_layout.tsx)
+#### [MODIFY] [\_layout.tsx](./src/app/_layout.tsx)
 
 Root layout that loads custom fonts/icons, establishes the `AuthProvider`, and handles root theme configuration.
 
-#### [NEW] [login.tsx](file:///Users/wiezmankimchi/Documents/antigravity/GreenZincGrayhound/app/login.tsx)
+#### [NEW] [login.tsx](./src/app/login.tsx)
 
 Login screen styled with modern gray shades containing:
 
@@ -69,19 +69,19 @@ Login screen styled with modern gray shades containing:
 - Email and Password fields.
 - Submit button that sets the auth token and redirects.
 
-#### [NEW] [(app)/\_layout.tsx](<file:///Users/wiezmankimchi/Documents/antigravity/GreenZincGrayhound/app/(app)/_layout.tsx>)
+#### [NEW] [(app)/\_layout.tsx](<./src/app/(app)/_layout.tsx>)
 
 Protected layout utilizing `expo-router` stack or tabs, checking the auth context. If unauthorized, automatically redirects to `/login`.
 
-#### [NEW] [(app)/index.tsx](<file:///Users/wiezmankimchi/Documents/antigravity/GreenZincGrayhound/app/(app)/index.tsx>)
+#### [NEW] [(app)/index.tsx](<./src/app/(app)/index.tsx>)
 
 Main dashboard screen with links/buttons to Profile/Settings and Lists, beautiful dashboard summary cards, and quick actions.
 
-#### [NEW] [(app)/profile.tsx](<file:///Users/wiezmankimchi/Documents/antigravity/GreenZincGrayhound/app/(app)/profile.tsx>)
+#### [NEW] [(app)/profile.tsx](<./src/app/(app)/profile.tsx>)
 
 Profile and settings screen styled in modern grays with mock user details, switch options, and a logout button.
 
-#### [NEW] [(app)/lists.tsx](<file:///Users/wiezmankimchi/Documents/antigravity/GreenZincGrayhound/app/(app)/lists.tsx>)
+#### [NEW] [(app)/lists.tsx](<./src/app/(app)/lists.tsx>)
 
 A beautiful list view demonstrating scrolling list items, pull-to-refresh, filters, and custom badge elements.
 

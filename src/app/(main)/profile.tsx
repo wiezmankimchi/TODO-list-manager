@@ -10,21 +10,29 @@ import {
 import { useAuth } from '@/context/auth';
 import { useTheme } from '@/hooks/use-theme';
 import { useProfileStorage } from '@/hooks/use-profile-storage';
+import { useOpenDentalConfig } from '@/hooks/use-opendental-config';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
 import { ThemedText } from '@/components/themed-text';
-import { User, Mail, Shield, Bell, HelpCircle } from 'lucide-react-native';
+import { User, Mail, Shield, Bell, HelpCircle, Server, Key, Globe } from 'lucide-react-native';
 
 export default function ProfileScreen() {
   const { session, signOut } = useAuth();
   const theme = useTheme();
   const { profile, isLoaded, saveProfile, clearProfile } = useProfileStorage(session);
 
+  const { config: odConfig, isLoaded: odLoaded, isConfigured, saveConfig: saveOdConfig } = useOpenDentalConfig();
+
   const [displayName, setDisplayName] = useState(profile.displayName);
   const [email, setEmail] = useState(profile.email);
   const [notifications, setNotifications] = useState(profile.notifications);
   const [isSaving, setIsSaving] = useState(false);
+
+  const [odBaseUrl, setOdBaseUrl] = useState(odConfig.baseUrl);
+  const [odDevKey, setOdDevKey] = useState(odConfig.developerKey);
+  const [odCustKey, setOdCustKey] = useState(odConfig.customerKey);
+  const [isSavingOd, setIsSavingOd] = useState(false);
 
   useEffect(() => {
     if (isLoaded) {
@@ -33,6 +41,14 @@ export default function ProfileScreen() {
       setNotifications(profile.notifications);
     }
   }, [isLoaded]);
+
+  useEffect(() => {
+    if (odLoaded) {
+      setOdBaseUrl(odConfig.baseUrl);
+      setOdDevKey(odConfig.developerKey);
+      setOdCustKey(odConfig.customerKey);
+    }
+  }, [odLoaded]);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -171,6 +187,60 @@ export default function ProfileScreen() {
                 onPress={() => Alert.alert('Support', 'Please email support@example.com for help.')}
               />
             </View>
+          </CardContent>
+        </Card>
+
+        {/* OpenDental API Configuration */}
+        <ThemedText type="smallBold" style={styles.sectionTitle}>
+          OpenDental API
+        </ThemedText>
+
+        <Card style={styles.card}>
+          <CardHeader>
+            <CardTitle>API Configuration</CardTitle>
+            <CardDescription>
+              {isConfigured
+                ? 'OpenDental API is configured and ready.'
+                : 'Enter your OpenDental Cloud API credentials to enable uploads.'}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Input
+              label="Base URL"
+              placeholder="https://api.opendental.com/api/v1"
+              value={odBaseUrl}
+              onChangeText={setOdBaseUrl}
+              autoCapitalize="none"
+              keyboardType="url"
+              leftIcon={<Globe size={16} color={theme.textSecondary} />}
+            />
+            <Input
+              label="Developer Key"
+              placeholder="Your developer key"
+              value={odDevKey}
+              onChangeText={setOdDevKey}
+              autoCapitalize="none"
+              leftIcon={<Key size={16} color={theme.textSecondary} />}
+            />
+            <Input
+              label="Customer Key"
+              placeholder="Your customer key"
+              value={odCustKey}
+              onChangeText={setOdCustKey}
+              autoCapitalize="none"
+              leftIcon={<Key size={16} color={theme.textSecondary} />}
+            />
+            <Button
+              label="Save API Settings"
+              loading={isSavingOd}
+              onPress={async () => {
+                setIsSavingOd(true);
+                await saveOdConfig({ baseUrl: odBaseUrl, developerKey: odDevKey, customerKey: odCustKey });
+                setIsSavingOd(false);
+                Alert.alert('Success', 'OpenDental API settings saved.');
+              }}
+              style={styles.saveButton}
+            />
           </CardContent>
         </Card>
 

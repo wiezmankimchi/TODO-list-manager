@@ -3,20 +3,20 @@ import { useColorScheme } from 'react-native';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import { AuthProvider } from '@/context/auth';
-import { TaskProvider } from '@/context/tasks';
+import { ProcedureProvider } from '@/context/procedure';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <AuthProvider>
-        <TaskProvider>
+        <ProcedureProvider>
           <AnimatedSplashOverlay />
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="login" options={{ headerShown: false, animation: 'fade' }} />
             <Stack.Screen name="(main)" options={{ headerShown: false }} />
           </Stack>
-        </TaskProvider>
+        </ProcedureProvider>
       </AuthProvider>
     </ThemeProvider>
   );

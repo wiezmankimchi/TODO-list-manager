@@ -33,22 +33,43 @@ export default function AppLayout() {
       <Stack.Screen
         name="index"
         options={{
-          title: 'Dashboard',
-          headerShown: false, // We will build a custom header on the dashboard
+          title: 'Home',
+          headerShown: false,
         }}
       />
       <Stack.Screen
-        name="lists"
+        name="scan"
         options={{
-          title: 'Lists',
-          headerBackTitle: '',
+          title: 'Scan QR Code',
+          headerBackTitle: 'Home',
+        }}
+      />
+      <Stack.Screen
+        name="capture"
+        options={{
+          title: 'Capture Images',
+          headerBackTitle: 'Back',
+        }}
+      />
+      <Stack.Screen
+        name="process"
+        options={{
+          title: 'Review & Generate PDF',
+          headerBackTitle: 'Back',
+        }}
+      />
+      <Stack.Screen
+        name="upload"
+        options={{
+          title: 'Upload to OpenDental',
+          headerBackTitle: 'Back',
         }}
       />
       <Stack.Screen
         name="profile"
         options={{
           title: 'Profile & Settings',
-          headerBackTitle: '',
+          headerBackTitle: 'Home',
         }}
       />
     </Stack>
